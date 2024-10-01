@@ -6,7 +6,9 @@ class Program
 {
     static void Main(string[] args)
     {
-            int size = 5;
+            Console.WriteLine("Escriba el tamaño de la matriz");
+            int size = int.Parse(Console.ReadLine());
+
             GeneradorMatrix generator = new GeneradorMatrix(size); 
             generator.GenerarMatrix();
             generator.ImprimirMatrix();
