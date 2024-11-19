@@ -8,4 +8,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Program.vb" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.vb" />
+  </ItemGroup>
+
 </Project>
