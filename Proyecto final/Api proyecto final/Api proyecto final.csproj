@@ -187,6 +187,7 @@
     <Compile Include="Controllers\AppointmentsController.cs" />
     <Compile Include="Controllers\ClientController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\NoticeController.cs" />
     <Compile Include="Controllers\ServicesController.cs" />
     <Compile Include="Controllers\WorkersController.cs" />
     <Compile Include="Global.asax.cs">
@@ -200,6 +201,7 @@
     <Compile Include="Models\Appointment.cs" />
     <Compile Include="Models\AppointmentContext.cs" />
     <Compile Include="Models\Client.cs" />
+    <Compile Include="Models\Notice.cs" />
     <Compile Include="Models\Service.cs" />
     <Compile Include="Models\worker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -273,6 +275,7 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Views\Client\" />
+    <Folder Include="Views\Notice\" />
     <Folder Include="Views\Services\" />
   </ItemGroup>
   <ItemGroup>

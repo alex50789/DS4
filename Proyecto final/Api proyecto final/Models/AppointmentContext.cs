@@ -6,7 +6,6 @@ using System.Data.Entity;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Infrastructure.Annotations;    
 using System.Data.Entity.ModelConfiguration.Conventions;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Api_proyecto_final.Models
 {
@@ -22,6 +21,7 @@ namespace Api_proyecto_final.Models
         public DbSet<Client> Clients { get; set; }
         public DbSet<Service> Services { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<Notice> Notices { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -160,6 +160,39 @@ namespace Api_proyecto_final.Models
                 .WithMany()
                 .HasForeignKey(a => a.ServiceId)
                 .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<Notice>()
+                .ToTable("notices");
+
+            modelBuilder.Entity<Notice>()
+                .HasKey(n => n.Id);
+
+            modelBuilder.Entity<Notice>()
+                .Property(n => n.Id)
+                .HasColumnName("id")
+                .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+
+            modelBuilder.Entity<Notice>()
+                .Property(n => n.Title)
+                .HasColumnName("title")
+                .IsRequired()
+                .HasMaxLength(255);
+
+            modelBuilder.Entity<Notice>()
+                .Property(n => n.Content)
+                .HasColumnName("content")
+                .IsRequired();
+
+            modelBuilder.Entity<Notice>()
+                .Property(n => n.PublishedDate)
+                .HasColumnName("published_date")
+                .IsRequired();
+
+            modelBuilder.Entity<Notice>()
+                .Property(n => n.IsActive)
+                .HasColumnName("is_active")
+                .IsRequired();
+
 
             base.OnModelCreating(modelBuilder);
 
