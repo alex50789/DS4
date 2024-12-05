@@ -144,21 +144,26 @@ namespace Api_proyecto_final.Models
                 .HasMaxLength(50);
 
             modelBuilder.Entity<Appointment>()
-                .HasRequired(a => a.Client)
-                .WithMany()
-                .HasForeignKey(a => a.ClientId);
+                    .HasRequired(a => a.Client)
+                    .WithMany()
+                    .HasForeignKey(a => a.ClientId)
+                    .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Appointment>()
                 .HasRequired(a => a.Worker)
                 .WithMany()
-                .HasForeignKey(a => a.WorkerId);
+                .HasForeignKey(a => a.WorkerId)
+                .WillCascadeOnDelete(false);
 
             modelBuilder.Entity<Appointment>()
                 .HasRequired(a => a.Service)
                 .WithMany()
-                .HasForeignKey(a => a.ServiceId);
+                .HasForeignKey(a => a.ServiceId)
+                .WillCascadeOnDelete(false);
 
             base.OnModelCreating(modelBuilder);
+
+
         }
     }
 }

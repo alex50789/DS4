@@ -8,8 +8,9 @@ namespace Api_proyecto_final
         {
             protected void Application_Start()
             {
-                // Configuración de Web API
-                GlobalConfiguration.Configure(WebApiConfig.Register);
+            log4net.Config.XmlConfigurator.Configure(new System.IO.FileInfo(Server.MapPath("~/log4net.config")));
+            // Configuración de Web API
+            GlobalConfiguration.Configure(WebApiConfig.Register);
 
                 // Configurar el formateador JSON para usar camelCase
                 var formatters = GlobalConfiguration.Configuration.Formatters;

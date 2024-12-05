@@ -2,48 +2,69 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Web.Http;
+using Api_proyecto_final.Models;
+using System.Data.Entity;
+using System.Threading.Tasks;
+using System.Web.Http.Description;
+using System.Data.Entity.Infrastructure;
 
 namespace Api_proyecto_final.Controllers
 {
-    using Api_proyecto_final.Models;
-    // Controllers/WorkersController.cs
-    using System.Data.Entity;
-    using System.Data.Entity.Infrastructure;
-    using System.Linq;
-    using System.Net;
-    using System.Threading.Tasks;
-    using System.Web.Http;
-    using System.Web.Http.Description;
-
-    [RoutePrefix("api/Workers")]
+    [RoutePrefix("api/workers")]
     public class WorkersController : ApiController
     {
-        private AppointmentContext db = new AppointmentContext();
+        private readonly AppointmentContext _db;
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        // GET: api/Workers
-        public IQueryable<Worker> GetWorkers()
+        public WorkersController()
         {
-            return db.Workers;
+            _db = new AppointmentContext();
         }
 
-        // GET: api/Workers/5
-        [ResponseType(typeof(Worker))]
+        [HttpGet]
+        [Route("")]
+        public IHttpActionResult GetAllWorkers()
+        {
+            try
+            {
+                log.Info("GetAllWorkers method called");
+                var workers = _db.Workers.ToList();
+                log.Info($"Retrieved {workers.Count} workers");
+                return Ok(workers);
+            }
+            catch (Exception ex)
+            {
+                log.Error("Error in GetAllWorkers", ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        [HttpGet]
+        [Route("{id:long}", Name = "GetWorker")]
         public async Task<IHttpActionResult> GetWorker(long id)
         {
-            Worker worker = await db.Workers.FindAsync(id);
-            if (worker == null)
+            try
             {
-                return NotFound();
+                log.Info($"GetWorker method called with id: {id}");
+                Worker worker = await _db.Workers.FindAsync(id);
+                if (worker == null)
+                {
+                    log.Warn($"Worker with id {id} not found");
+                    return NotFound();
+                }
+                return Ok(worker);
             }
-
-            return Ok(worker);
+            catch (Exception ex)
+            {
+                log.Error($"Error in GetWorker for id: {id}", ex);
+                return InternalServerError(ex);
+            }
         }
 
-        // PUT: api/Workers/5
-        [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> PutWorker(long id, Worker worker)
+        [HttpPut]
+        [Route("{id:long}")]
+        public async Task<IHttpActionResult> UpdateWorker(long id, [FromBody] Worker worker)
         {
             if (!ModelState.IsValid)
             {
@@ -52,73 +73,117 @@ namespace Api_proyecto_final.Controllers
 
             if (id != worker.Id)
             {
-                return BadRequest();
+                return BadRequest("El ID en la URL no coincide con el ID en el cuerpo de la solicitud.");
             }
-
-            db.Entry(worker).State = EntityState.Modified;
 
             try
             {
-                await db.SaveChangesAsync();
+                log.Info($"Método UpdateWorker llamado para el id: {id}");
+
+                // Obtener el trabajador existente de la base de datos
+                var existingWorker = await _db.Workers.FindAsync(id);
+                if (existingWorker == null)
+                {
+                    log.Warn($"No se encontró el trabajador con id {id} para actualizar");
+                    return NotFound();
+                }
+
+                // Actualizar las propiedades del trabajador existente
+                existingWorker.Name = worker.Name;
+                existingWorker.Email = worker.Email;
+                existingWorker.Password = worker.Password;
+
+                // Marcar la entidad como modificada
+                _db.Entry(existingWorker).State = EntityState.Modified;
+
+                // Intentar guardar los cambios
+                await _db.SaveChangesAsync();
+
+                log.Info($"Trabajador con id {id} actualizado exitosamente");
+                return StatusCode(HttpStatusCode.NoContent);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                log.Error($"Error de concurrencia al actualizar el trabajador {id}", ex);
                 if (!WorkerExists(id))
                 {
                     return NotFound();
                 }
                 else
                 {
-                    throw;
+                    return Conflict();
                 }
             }
-
-            return StatusCode(HttpStatusCode.NoContent);
+            catch (Exception ex)
+            {
+                log.Error($"Error en UpdateWorker para el id: {id}", ex);
+                return InternalServerError(ex);
+            }
         }
 
-        // POST: api/Workers
-        [ResponseType(typeof(Worker))]
-        public async Task<IHttpActionResult> PostWorker(Worker worker)
+        private bool WorkerExists(long id)
+        {
+            return _db.Workers.Count(e => e.Id == id) > 0;
+        }
+
+
+        [HttpPost]
+        [Route("")]
+        public async Task<IHttpActionResult> CreateWorker([FromBody] Worker worker)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            db.Workers.Add(worker);
-            await db.SaveChangesAsync();
-
-            return CreatedAtRoute("DefaultApi", new { id = worker.Id }, worker);
+            try
+            {
+                log.Info("CreateWorker method called");
+                _db.Workers.Add(worker);
+                await _db.SaveChangesAsync();
+                log.Info($"Worker created with id: {worker.Id}");
+                return CreatedAtRoute("GetWorker", new { id = worker.Id }, worker);
+            }
+            catch (Exception ex)
+            {
+                log.Error("Error in CreateWorker", ex);
+                return InternalServerError(ex);
+            }
         }
 
-        // DELETE: api/Workers/5
-        [ResponseType(typeof(Worker))]
+        [HttpDelete]
+        [Route("{id:long}")]
         public async Task<IHttpActionResult> DeleteWorker(long id)
         {
-            Worker worker = await db.Workers.FindAsync(id);
-            if (worker == null)
+            try
             {
-                return NotFound();
+                log.Info($"DeleteWorker method called for id: {id}");
+                Worker worker = await _db.Workers.FindAsync(id);
+                if (worker == null)
+                {
+                    log.Warn($"Worker with id {id} not found for deletion");
+                    return NotFound();
+                }
+
+                _db.Workers.Remove(worker);
+                await _db.SaveChangesAsync();
+                log.Info($"Worker with id {id} deleted successfully");
+                return StatusCode(HttpStatusCode.NoContent);
             }
-
-            db.Workers.Remove(worker);
-            await db.SaveChangesAsync();
-
-            return Ok(worker);
+            catch (Exception ex)
+            {
+                log.Error($"Error in DeleteWorker for id: {id}", ex);
+                return InternalServerError(ex);
+            }
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                db.Dispose();
+                _db.Dispose();
             }
             base.Dispose(disposing);
-        }
-
-        private bool WorkerExists(long id)
-        {
-            return db.Workers.Count(e => e.Id == id) > 0;
         }
     }
 }
