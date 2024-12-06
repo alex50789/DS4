@@ -151,6 +151,31 @@ namespace Api_proyecto_final.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("login")]
+        public async Task<IHttpActionResult> Login([FromBody] LoginModel model)
+        {
+            try
+            {
+                log.Info($"Login attempt for email: {model.Email}");
+                var worker = await _db.Workers.FirstOrDefaultAsync(w => w.Email == model.Email && w.Password == model.Password);
+                if (worker == null)
+                {
+                    log.Warn($"Login failed for email: {model.Email}");
+                    return NotFound();
+                }
+                log.Info($"Login successful for worker id: {worker.Id}");
+                return Ok(worker);
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Error in Worker Login for email: {model.Email}", ex);
+                return InternalServerError(ex);
+            }
+        }
+
+
+
         [HttpDelete]
         [Route("{id:long}")]
         public async Task<IHttpActionResult> DeleteWorker(long id)

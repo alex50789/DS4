@@ -201,6 +201,7 @@
     <Compile Include="Models\Appointment.cs" />
     <Compile Include="Models\AppointmentContext.cs" />
     <Compile Include="Models\Client.cs" />
+    <Compile Include="Models\LoginModel.cs" />
     <Compile Include="Models\Notice.cs" />
     <Compile Include="Models\Service.cs" />
     <Compile Include="Models\worker.cs" />

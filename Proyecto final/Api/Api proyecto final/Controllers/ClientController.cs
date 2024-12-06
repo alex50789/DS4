@@ -92,6 +92,31 @@ namespace Api_proyecto_final.Controllers
                 }
             }
 
+            [HttpPost]
+            [Route("login")]
+            public async Task<IHttpActionResult> Login([FromBody] LoginModel model)
+            {
+                try
+                {
+                    log.Info($"Login attempt for email: {model.Email}");
+                    var client = await _db.Clients.FirstOrDefaultAsync(c => c.Email == model.Email && c.Password == model.Password);
+                    if (client == null)
+                    {
+                        log.Warn($"Login failed for email: {model.Email}");
+                        return NotFound();
+                    }
+                    log.Info($"Login successful for client id: {client.Id}");
+                    return Ok(client);
+                }
+                catch (Exception ex)
+                {
+                    log.Error($"Error in Client Login for email: {model.Email}", ex);
+                    return InternalServerError(ex);
+                }
+            }
+
+
+
             // PUT: api/clients/5
             [HttpPut]
             [Route("{id:long}")]
